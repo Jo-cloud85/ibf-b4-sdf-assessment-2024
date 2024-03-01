@@ -2,19 +2,19 @@ package sg.edu.nus.iss;
 
 import java.io.Console;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Iterator;
+import java.util.Comparator;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Scanner;
-import java.util.Set;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collector;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
+import java.util.stream.Stream;
 
 // 1. javac -d bin src/sg/edu/nus/iss/*
 // 2. java -cp bin sg.edu.nus.iss.Main Rush2.csv
@@ -24,12 +24,6 @@ public class Main {
 
     private static List<String> singlePokeStack;
     private static Map<Integer, List<String>> pokeMap;
-
-    private static final String ONE = "(1)";
-    private static final String TWO = "(2)";
-    private static final String THREE = "(3)";
-    private static final String FOUR = "(4)";
-    private static final String QUIT = "q";
 
     public static void main(String[] args) throws Exception {
 
@@ -46,7 +40,7 @@ public class Main {
         
         FileService fileService = new FileService();
         List<String> allPokeStacks = fileService.ReadCSV(csvFile);
-        // System.out.println(allPokeStacks);
+
         String[] allPokeStacksArr = allPokeStacks.toString().split("\\|, ");
         pokeMap = new LinkedHashMap<>();
         for (int i = 0; i < allPokeStacksArr.length; i++) {
@@ -89,7 +83,7 @@ public class Main {
                 //continue;
             }
 
-            else if (input.equals("4")) {
+            else if (input.equals("3")) {
                 String moreUserInput1 = console.readLine("Create a new Pokemon stack and save to a new file > " + "\n");
                 String moreUserInput2 = console.readLine("Enter filename to save (e.g. path/filename.csv)" + "\n");
             
@@ -108,9 +102,16 @@ public class Main {
                 continue;
             }
 
+            else if (input.equals("4")) {
+                printPokemonCardCount();
+                break;
+            }
+
             else {
                 pressAnyKeyToContinue();
             }
+
+            
         }
     }
 
@@ -122,7 +123,6 @@ public class Main {
     // Task 1
     public static void pressAnyKeyToContinue() {
         // your code here
-        // printHeader();
         Console console = System.console();
         //String input = "";
         String input = console.readLine("Invalid command. Press any key to continue...");
@@ -196,29 +196,58 @@ public class Main {
         for (Map.Entry<Integer, List<String>> entry : pokeMap.entrySet()) {
             List<String> singleStackList = entry.getValue();
             Integer stackNum = entry.getKey();
+            System.out.println("Set " + stackNum);
             if (!singleStackList.contains(enteredPokemon)) {
-                System.out.println("Set " + stackNum + "\n" + enteredPokemon + " not found in this set.");
+                System.out.println(enteredPokemon + " not found in this set.");
                 System.out.println("-".repeat(40));
             } else {
-                // check if 5 star pokemon exist
-                for (String poke : singleStackList) {
-                    int pokeStar = Integer.parseInt(poke.split("\\*")[0]);
-                    if (pokeStar == 5) {
-                        int index = singleStackList.indexOf(poke);
-                        int numLeft = singleStackList.size() - index + 1;
-                        System.out.println(poke + ">>>" + numLeft + " cards to go.");
-                    }
+                if (!canFind5(singleStackList)) {
+                    System.out.println("No 5 stars Pokemon found subsequently in the stack.");
                 }
-               
-                System.out.println("Set " + stackNum + "\nNo 5 stars Pokemon found subsequently in the stack.");
-                System.out.println("---------");
             }
         }
+    }
+
+    // Task 2 (added)
+    public static boolean canFind5(List<String> singleStackList) {
+        for (String poke :singleStackList) {
+            if (poke.startsWith("5")) {
+                int index = singleStackList.indexOf(poke);
+                int numLeft = singleStackList.size() - index + 1;
+                System.out.println(poke + ">>>" + numLeft + " cards to go.");
+            }
+        }
+        return true;
     }
 
     // Task 2
     public static void printPokemonCardCount() {
         // Task 2 - your code here
+        StringBuilder combinedStr = new StringBuilder();
+
+        for (Map.Entry<Integer, List<String>> entry : pokeMap.entrySet()) {            
+            StringBuilder string = new StringBuilder();
+            for (String str : entry.getValue()) {
+                string.append(str + ",");
+            }
+            combinedStr.append(string);
+        }
+
+        String[] newArr = combinedStr.toString().split(",");
+
+        Map<String, Integer> newPokeMap = new HashMap<>();
+
+        for (String poke : newArr) {
+            newPokeMap.put(poke, newPokeMap.getOrDefault(poke, 0) + 1);
+        }
+
+        AtomicInteger i = new AtomicInteger();
+
+        newPokeMap.entrySet()
+             .stream()
+             .sorted(Map.Entry.comparingByValue(Comparator.reverseOrder()))
+             .limit(10)
+             .forEach(x -> System.out.println("Pokemon " + (i.getAndIncrement() + 1) + ": " + x.getKey() + "Cards Count: " + x.getValue()));
     }
 
 }

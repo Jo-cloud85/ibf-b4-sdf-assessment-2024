@@ -2,7 +2,6 @@ package sg.edu.nus.iss;
 
 import java.io.Console;
 import java.io.IOException;
-import java.util.Arrays;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -11,14 +10,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Scanner;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.stream.Collector;
-import java.util.stream.Collectors;
-import java.util.stream.IntStream;
-import java.util.stream.Stream;
 
 // 1. javac -d bin src/sg/edu/nus/iss/*
 // 2. java -cp bin sg.edu.nus.iss.Main Rush2.csv
-
 
 public class Main {
 
@@ -30,11 +24,9 @@ public class Main {
         // Run Your Code here
         String csvFile = args[0];
 
-        if (csvFile != null) {
-            // run file.
-        } else {
+        if (csvFile == null) {
             System.out.println("Missing csv file ...");
-        }
+        } 
 
         printHeader();
         
@@ -61,11 +53,12 @@ public class Main {
 
         Console console = System.console();
         String input = "";
-        input = console.readLine("Enter your selection > ");
 
         boolean quit = false;
 
         while (!quit) {
+            input = console.readLine("Enter your selection > ");
+
             if (input.startsWith("q")) {
                 printExitMessage();
                 quit = true;
@@ -74,12 +67,14 @@ public class Main {
             else if (input.equals("1")) {
                 String moreUserInput = console.readLine("Display the list of unique Pokemon in stack (1 - 8) > \n");
                 printUniquePokemonStack(Integer.parseInt(moreUserInput));
-                continue;
+                pressAnyKeyToContinue();
+                //continue;
             }
 
             else if (input.equals("2")) {
                 String moreUserInput = console.readLine("Search for the next occurence of 5 stars Pokemon in all stacks based on entered Pokemon > \n");
-                printNext5StarsPokemon(moreUserInput);
+                printNext5StarsPokemon(moreUserInput.trim());
+                pressAnyKeyToContinue();
                 //continue;
             }
 
@@ -99,19 +94,20 @@ public class Main {
                 }
                 scanner1.close();
                 scanner2.close();
+                pressAnyKeyToContinue();
                 continue;
             }
 
             else if (input.equals("4")) {
                 printPokemonCardCount();
-                break;
+                pressAnyKeyToContinue();
+                continue;
+
             }
 
             else {
-                pressAnyKeyToContinue();
+                System.out.println("Invalid command");
             }
-
-            
         }
     }
 
@@ -122,15 +118,12 @@ public class Main {
 
     // Task 1
     public static void pressAnyKeyToContinue() {
-        // your code here
-        Console console = System.console();
-        //String input = "";
-        String input = console.readLine("Invalid command. Press any key to continue...");
-        //System.out.println("Invalid command. Press any key to continue...");
-        String[] commandArr = new String[]{"1", "2", "3", "4", "q"};
-        boolean found = Arrays.stream(commandArr).anyMatch(x -> input.equals(x));
-        if (!found) {
-            printHeader();
+        
+        try {
+            System.out.println("Press any key to continue...");
+            System.in.read();
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 
@@ -197,9 +190,8 @@ public class Main {
             List<String> singleStackList = entry.getValue();
             Integer stackNum = entry.getKey();
             System.out.println("Set " + stackNum);
-            if (!singleStackList.contains(enteredPokemon)) {
+            if (!singleStackList.contains(enteredPokemon.stripTrailing())) {
                 System.out.println(enteredPokemon + " not found in this set.");
-                System.out.println("-".repeat(40));
             } else {
                 if (!canFind5(singleStackList)) {
                     System.out.println("No 5 stars Pokemon found subsequently in the stack.");
@@ -211,7 +203,7 @@ public class Main {
     // Task 2 (added)
     public static boolean canFind5(List<String> singleStackList) {
         for (String poke :singleStackList) {
-            if (poke.startsWith("5")) {
+            if (poke.contains("5")) {
                 int index = singleStackList.indexOf(poke);
                 int numLeft = singleStackList.size() - index + 1;
                 System.out.println(poke + ">>>" + numLeft + " cards to go.");

@@ -12,20 +12,18 @@ import java.util.List;
 public class FileService {
     public List<String> ReadCSV(String fullPathFilename) {
         // Task 1 - your code here
-
         List<String> allPokeStacks = new LinkedList<>();
 
         Path csvFilePath = Paths.get(fullPathFilename);
         
         if (!Files.exists(csvFilePath)) {
-            System.out.println("Cannot find file, please check your file path!");
+            System.out.println("Cannot find the file you are looking for. Please check your file path!");
         } else {
             try (BufferedReader br = Files.newBufferedReader(csvFilePath)){
                 String line = "";
                 while ((line = br.readLine()) != null) {
-                    allPokeStacks.add(line + "|");
+                    allPokeStacks.add(line + "|"); // add a separator between different stacks
                 }
-                //System.out.println(allPokeStacks);
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -44,9 +42,10 @@ public class FileService {
                 bw.newLine();
                 bw.write(pokemons);
                 bw.newLine();
+                bw.flush();
             } catch (Exception e) {
                 System.out.println("Error writing to file....");
             }
-        }
+        } 
     }
 }

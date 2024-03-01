@@ -198,16 +198,16 @@ public class Main {
             Integer stackNum = entry.getKey();
             if (!singleStackList.contains(enteredPokemon)) {
                 System.out.println("Set " + stackNum + "\n" + enteredPokemon + " not found in this set.");
+                System.out.println("-".repeat(40));
             } else {
+                // check if 5 star pokemon exist
                 for (String poke : singleStackList) {
-                    //System.out.println(poke);
                     int pokeStar = Integer.parseInt(poke.split("\\*")[0]);
                     if (pokeStar == 5) {
                         int index = singleStackList.indexOf(poke);
                         int numLeft = singleStackList.size() - index + 1;
                         System.out.println(poke + ">>>" + numLeft + " cards to go.");
-                    } 
-                   
+                    }
                 }
                
                 System.out.println("Set " + stackNum + "\nNo 5 stars Pokemon found subsequently in the stack.");
